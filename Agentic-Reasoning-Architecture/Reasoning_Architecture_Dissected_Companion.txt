@@ -1,0 +1,494 @@
+REASONING ARCHITECTURE DISSECTED
+Companion Technical Note
+Version 1.0
+Date: 2026-08-12
+
+PURPOSE
+
+This document is the text companion to the "Reasoning Architecture Dissected" system diagram. The architecture models reasoning as a recursive, stateful cognitive engine rather than a linear prompt-to-answer chain. Its core design principle is repeated controlled opposition: evidence is balanced against constraints, divergence against convergence, and heuristic plausibility against formal verification. Each opposition is reconciled through a synthesis or state-estimation step before the system is permitted to act.
+
+The complete operating cycle is:
+
+OBSERVE -> CONTEXTUALIZE -> DIVERGE <-> CONVERGE -> SYNTHESIZE -> CHECK -> AGGREGATE -> DECIDE -> ACT -> OBSERVE
+
+The final arrow is essential. Action changes the world. The resulting observation must return to the engine so that the system can update its internal state and continue intelligently.
+
+----------------------------------------------------------------------
+1. CONTEXT INGESTION
+----------------------------------------------------------------------
+
+Primary nodes:
+- Prompt
+- Evidence / World Vector
+- Constraints
+- Context Fusion
+
+PROMPT
+
+The Prompt represents the user's explicit instruction, question, objective, or immediate request. It is not treated as the entire problem definition. Human instructions are often incomplete, compressed, ambiguous, or dependent on prior context.
+
+EVIDENCE / WORLD VECTOR
+
+The Evidence / World Vector contains the raw material available to the engine beyond the literal prompt. Depending on the implementation, this may include:
+- Retrieved documents
+- Files
+- Database records
+- Tool outputs
+- Environmental observations
+- Memory
+- Prior state
+- Logs
+- Images, audio, video, or sensor data
+- External search results
+- Results returned by child agents
+
+The term "world vector" is intentionally broader than "prompt embedding." It represents the machine's current observational contact with the problem space.
+
+CONSTRAINTS
+
+Constraints define what the system must, should, or cannot do. These can include:
+- User requirements
+- Safety boundaries
+- Permissions
+- Resource limits
+- Time limits
+- Cost limits
+- System invariants
+- Legal or policy boundaries
+- Output-format requirements
+- Technical feasibility
+- Dependencies
+- Acceptance tests
+
+Constraints should influence reasoning from the beginning rather than being applied only as a final rejection filter.
+
+CONTEXT FUSION
+
+Context Fusion produces a canonical internal representation of the task. It reconciles prompt, evidence, constraints, and current state.
+
+Typical responsibilities:
+- Resolve references and pronouns
+- Recover implied goals
+- Separate hard constraints from preferences
+- Attach relevant memory and evidence
+- Detect contradictions
+- Identify missing information
+- Establish subgoals
+- Establish confidence and uncertainty
+- Determine available tools and permissions
+- Normalize the problem into a machine-usable task state
+
+A failure in Context Fusion contaminates everything downstream. For that reason it should be treated as a first-class system component rather than a lightweight preprocessing step.
+
+A compact formal representation is:
+
+X = ContextFusion(P, V, C, S_t)
+
+where:
+P = prompt
+V = evidence/world vector
+C = constraints
+S_t = current system state
+X = fused task context
+
+----------------------------------------------------------------------
+2. HYPOTHESIS SPACE
+----------------------------------------------------------------------
+
+Primary nodes:
+- Expansion (Divergence)
+- Filtering (Convergence)
+- Central Reasoning (Synthesis)
+
+EXPANSION / DIVERGENCE
+
+Expansion intentionally widens the solution space. It asks:
+- What could this mean?
+- What alternative explanations exist?
+- What hidden dependencies may matter?
+- What approaches have not yet been considered?
+- What non-obvious connections exist?
+- What child tasks or agents could be spawned?
+
+Expansion is designed to prevent premature closure.
+
+If H is the generated hypothesis space:
+
+H = Expand(X)
+
+FILTERING / CONVERGENCE
+
+Filtering removes or demotes candidates that are:
+- Irrelevant
+- Redundant
+- Infeasible
+- Contradictory
+- Unsupported
+- Low-value
+- Constraint-violating
+- Inferior to stronger alternatives
+
+Filtered hypothesis space:
+
+H' = Filter(H, X, C)
+
+Expansion and Filtering should be able to exchange information iteratively. The architecture is not "brainstorm everything once, then prune once." New filtering information may trigger new expansion; new hypotheses may force new filtering criteria.
+
+CENTRAL REASONING / SYNTHESIS
+
+Central Reasoning integrates the surviving hypotheses with the fused context. It performs causal reasoning, planning, decomposition, comparison, inference, or problem solving as appropriate.
+
+R = Reason(X, H')
+
+The central reasoning node is intentionally connected to both divergent and convergent processes. It should not be forced to generate and criticize with the same cognitive operation at the same instant. Separating those roles reduces first-answer fixation and makes the reasoning process easier to inspect.
+
+----------------------------------------------------------------------
+3. VALIDATION LAYER
+----------------------------------------------------------------------
+
+Primary nodes:
+- Heuristics (Real-World Sensemaking)
+- Logic Verification (Formal Check)
+
+The architecture uses dual validation because plausible and valid are not synonyms.
+
+HEURISTICS / REAL-WORLD SENSEMAKING
+
+Heuristic validation asks whether the candidate conclusion behaves sensibly in the real world.
+
+Inputs may include:
+- Experience
+- Pattern recognition
+- Bayesian priors
+- Base rates
+- Analogy
+- Known failure modes
+- Cost/benefit
+- Practicality
+- Expected usefulness
+- Signal quality
+- Empirical plausibility
+
+A result can be formally possible yet practically absurd. Heuristics are designed to catch that class of failure.
+
+LOGIC VERIFICATION / FORMAL CHECK
+
+Logic Verification asks whether the candidate conclusion is internally and formally valid.
+
+Checks may include:
+- Contradiction detection
+- Mathematical verification
+- Dependency satisfaction
+- Schema/type validation
+- Causal consistency
+- Invariant checking
+- Unit tests
+- Property tests
+- Proof obligations
+- Exact constraint satisfaction
+- Reproducibility checks
+
+A result can feel plausible yet be logically impossible. Formal verification is designed to catch that class of failure.
+
+The two validators should remain distinct enough to disagree. Their disagreement is useful information, not an error.
+
+Example:
+
+S_H = HeuristicScore(R)
+S_L = LogicVerify(R)
+
+A strong system records both instead of collapsing them prematurely into a single confidence number.
+
+----------------------------------------------------------------------
+4. STATE AND DECISION
+----------------------------------------------------------------------
+
+Primary nodes:
+- State Aggregation
+- Decision / Commit Gate
+
+STATE AGGREGATION
+
+State Aggregation produces the current best "truth state" of the task. It combines:
+- Fused context
+- Reasoning output
+- Heuristic assessment
+- Formal verification
+- Existing system state
+- Tool and agent results
+- Confidence
+- Unresolved contradictions
+- Remaining information gaps
+
+A generic formulation is:
+
+S_(t+1) = Aggregate(X, R, S_H, S_L, S_t)
+
+The result should be more than a prose summary. In a production system it should be a structured state object that can be persisted, queried, compared, checkpointed, and passed between agents.
+
+Useful state fields may include:
+- Current objective
+- Known facts
+- Active assumptions
+- Candidate solutions
+- Rejected hypotheses
+- Evidence links
+- Confidence by claim
+- Constraint status
+- Open questions
+- Required actions
+- Tool state
+- Child-agent state
+- Completion criteria
+- Audit trail
+
+DECISION / COMMIT GATE
+
+The Commit Gate decides whether the engine should act, continue reasoning, gather more information, ask the user, or delegate.
+
+Core questions:
+- Is confidence sufficient?
+- Have mandatory checks passed?
+- Is additional information worth the cost?
+- Is the proposed action beneficial?
+- Is the action reversible?
+- Is it safe?
+- Does it require user approval?
+- Would another reasoning pass materially improve the result?
+- Should a child agent be spawned?
+
+One useful stopping rule is:
+
+ExpectedUtility(Act) > ExpectedUtility(ThinkAgain)
+
+If the inequality is not satisfied, the engine should continue rather than forcing an answer.
+
+This node prevents State Aggregation from secretly performing two different jobs: estimating reality and choosing an action.
+
+----------------------------------------------------------------------
+5. ACTION AND FEEDBACK
+----------------------------------------------------------------------
+
+Primary nodes:
+- Final Output / Action
+- Observation / Feedback
+
+FINAL OUTPUT / ACTION
+
+An action may be:
+- Produce a response
+- Write or modify a file
+- Call a tool
+- Execute code
+- Update a database
+- Create a task
+- Spawn an agent
+- Modify a plan
+- Request user approval
+- Perform an external operation
+
+The action layer is deliberately outside the internal reasoning engine. Thinking and acting are separated.
+
+OBSERVATION / FEEDBACK
+
+After an action is taken, the engine must observe its consequences.
+
+Possible feedback:
+- Success
+- Error
+- Partial completion
+- New data
+- New user instruction
+- External state change
+- Tool output
+- Failed assumption
+- Unexpected side effect
+- Child-agent result
+
+Feedback returns to the context/state machinery and begins another cycle.
+
+This closes the loop:
+
+Action -> Observation -> State Update -> Context Fusion -> Reasoning -> Decision -> Action
+
+Without this loop, the system is a one-shot reasoning pipeline. With it, the system becomes adaptive and stateful.
+
+----------------------------------------------------------------------
+6. RECURSIVE AGENT ORCHESTRATION
+----------------------------------------------------------------------
+
+The architecture can be used as the execution primitive for a single agent or recursively instantiated for subproblems.
+
+When Central Reasoning encounters a difficult or independent subtask, it may package:
+
+- A child prompt
+- A scoped evidence/world vector
+- Child constraints
+- A completion contract
+
+and launch another instance of the same architecture.
+
+The child runs its own:
+
+OBSERVE -> CONTEXTUALIZE -> DIVERGE/CONVERGE -> SYNTHESIZE -> VERIFY -> DECIDE -> ACT
+
+The child then returns a validated result/state object to the parent.
+
+This creates a dynamic multi-agent tree in which topology is determined by the work itself rather than by a fixed roster of permanently named "researcher," "critic," or "coder" agents.
+
+Benefits:
+- Task-specific delegation
+- Controlled context size
+- Parallelism
+- Local verification
+- Clear parent/child contracts
+- Easier auditing
+- Reduced narrative drift
+- Reusable cognitive primitive
+
+----------------------------------------------------------------------
+7. WHY THE CROSS-CONNECTIONS MATTER
+----------------------------------------------------------------------
+
+The system is deliberately not a simple linear chain.
+
+Important direct paths include:
+- Evidence -> Central Reasoning
+- Constraints -> Central Reasoning
+- Expansion <-> Filtering
+- Central Reasoning -> Heuristics
+- Central Reasoning -> Logic Verification
+- Central Reasoning -> State Aggregation
+- Feedback -> Context / State
+
+These paths allow information to bypass unnecessary transformations and allow later discoveries to reshape earlier assumptions.
+
+The architecture therefore behaves more like a cognitive mesh or cyclic state machine than an assembly line.
+
+----------------------------------------------------------------------
+8. SYSTEM PROPERTIES
+----------------------------------------------------------------------
+
+RECURSIVE
+The same architecture can be instantiated for subproblems and child agents.
+
+STATEFUL
+The engine maintains an evolving model of the task, world, memory, and prior actions.
+
+VERIFIABLE
+Heuristic and formal validation are both required, reducing different classes of false conclusions.
+
+ADAPTIVE
+Observed outcomes feed back into state, allowing the engine to learn from success, failure, and environmental change.
+
+AUDITABLE
+Each hypothesis, rejection, validation result, state transition, and action can be logged.
+
+CONSTRAINT-AWARE
+Constraints influence generation and reasoning rather than appearing only as a final compliance check.
+
+NON-LINEAR
+The system supports supporting edges and feedback loops instead of enforcing a brittle one-directional pipeline.
+
+----------------------------------------------------------------------
+9. IMPLEMENTATION PRINCIPLES
+----------------------------------------------------------------------
+
+1. Diverge before converging.
+Do not collapse the solution space before alternatives have been generated.
+
+2. Challenge every important conclusion.
+A conclusion should survive both practical and formal scrutiny.
+
+3. Prefer truth state over fluent narrative.
+The internal representation should optimize for correctness, provenance, uncertainty, and actionability, not rhetorical smoothness.
+
+4. Separate reasoning from commitment.
+The system can believe that an action is promising without yet being authorized to execute it.
+
+5. Act only when warranted.
+Use explicit completion criteria, confidence thresholds, safety checks, and permission gates.
+
+6. Observe consequences.
+Every meaningful external action should create a new observation.
+
+7. Preserve provenance.
+Claims, decisions, state changes, and actions should trace back to their evidence and reasoning lineage.
+
+8. Make uncertainty explicit.
+Unknown, inferred, disputed, and verified should be distinguishable states.
+
+9. Treat disagreement as signal.
+Heuristic and formal validators should be permitted to disagree; unresolved disagreement can trigger another reasoning cycle.
+
+10. Learn continuously.
+Feedback should update future decisions, routing, priors, heuristics, and planning.
+
+----------------------------------------------------------------------
+10. MINIMUM EXECUTABLE STATE MACHINE
+----------------------------------------------------------------------
+
+A minimal implementation can be represented as:
+
+1. ingest(prompt, evidence, constraints, prior_state)
+2. context = fuse(...)
+3. hypotheses = expand(context)
+4. candidates = filter(hypotheses, constraints)
+5. reasoning = synthesize(context, candidates)
+6. heuristic_result = heuristic_check(reasoning)
+7. logic_result = formal_check(reasoning)
+8. state = aggregate(context, reasoning, heuristic_result, logic_result)
+9. decision = commit_gate(state)
+10. if decision == ACT:
+       result = execute(state.selected_action)
+       observation = observe(result)
+       return to step 1 with updated state
+    else:
+       refine, retrieve, delegate, or request missing information
+       return to the appropriate earlier stage
+
+----------------------------------------------------------------------
+11. CORE REVELATION
+----------------------------------------------------------------------
+
+The architecture is best understood as repeated dialectical reconciliation across multiple levels:
+
+Prompt / Evidence / Constraints -> Context
+Expansion / Filtering -> Reasoned Synthesis
+Heuristics / Logic -> Validated State
+State / Risk / Utility -> Decision
+Action / Consequence -> Updated World Model
+
+Each stage creates a temporary synthesis, and that synthesis becomes input to the next opposition.
+
+The resulting system is not "prompt -> reasoning -> answer."
+
+It is a continuous recursive loop of:
+
+OBSERVE
+CONTEXTUALIZE
+DIVERGE
+CONVERGE
+SYNTHESIZE
+CHECK
+AGGREGATE
+DECIDE
+ACT
+OBSERVE
+
+That loop is the engine.
+
+----------------------------------------------------------------------
+COMPANION IMAGE
+----------------------------------------------------------------------
+
+Reasoning_Architecture_Dissected.png
+
+The image visualizes the architecture described above using five color-coded functional layers:
+1. Context Ingestion
+2. Hypothesis Space
+3. Validation Layer
+4. State & Decision
+5. Action & Feedback
+
+End of companion note.

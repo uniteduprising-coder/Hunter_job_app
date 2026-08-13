@@ -1,0 +1,16 @@
+# Dependencies & Build Outputs
+node_modules
+hunter-app/node_modules
+dist
+hunter-app/dist
+
+# Zip archives & temporary extractions
+*.zip
+extracted_docx_instructions.txt
+resume_extracted.txt
+cover_letter_extracted.txt
+
+# Environment & Logs
+*.log
+.DS_Store
+.vscode
